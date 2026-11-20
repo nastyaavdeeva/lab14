@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char text[256]; // Увеличили буфер до 256, чтобы длинные строки файла помещались легче
+    
+    // 1. Открываем файл для чтения
+    FILE *file = fopen("res.txt", "r");
+    if (file == NULL) {
+        puts("-1");
+        return 1;
+    }
+
+    // Глобальные переменные-счетчики для всего файла
+    int total_digits = 0;
+    int total_spaces = 0;
+    int line_number = 0;
+
+    // 2. Цикл читает файл построчно, пока не дойдет до самого конца (End of File)
+    while (fgets(text, sizeof text, file) != NULL) {
+        line_number++; // Считаем номер текущей строки
+
+        // Проверяем, не превысила ли строка размер буфера
+        size_t len = strlen(text);
+        if (len == (sizeof text - 1) && text[len - 1] != '\n') {
+            printf("Error: Line %d is too long!\n", line_number);
+            fclose(file);
+            return 1;
+        }
+
+        // Удаляем символ переноса строки \n, если он есть
+        size_t pos = strcspn(text, "\n");
+        if (text[pos] == '\n') {
+            text[pos] = '\0';
+        }
+
+        // Выводим каждую прочитанную строку (опционально)
+        printf("Line %d: [%s]\n", line_number, text);
+
+        // 3. Подсчет символов в текущей строке через прямое сравнение
+        for (size_t i = 0; text[i] != '\0'; i++) {
+            if (text[i] >= '0' && text[i] <= '9') {
+                total_digits++;
+            } else if (text[i] == ' ') {
+                total_spaces++;
+            }
+        }
+    }
+
+    // 4. Обязательно закрываем файл после окончания цикла
+    fclose(file);
+
+    // Вывод общих результатов по всему файлу
+    puts("\n--- TOTAL RESULTS ---");
+    printf("Total lines processed: %d\n", line_number);
+    printf("Total Digits: %d\n", total_digits);
+    printf("Total Spaces: %d\n", total_spaces);
+
+    return 0;
+}
